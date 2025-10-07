@@ -2,6 +2,7 @@
 
 # Архитектура
 Проект разделен на 3 микросервиса:
+
 ![arch](/docs/arch/arch.png)
 
 ## User Service
