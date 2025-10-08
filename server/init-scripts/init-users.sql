@@ -10,5 +10,4 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 INSERT INTO users (email, password, name)
-VALUES ('test@example.com', 'ifjosafjioefgj', 'Test User')
-ON CONFLICT (email) DO NOTHING;
+VALUES ('test@example.com', 'ifjosafjioefgj', 'Test User');

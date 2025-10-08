@@ -13,6 +13,18 @@ services:
       - ./init-scripts/init-users.sql:/docker-entrypoint-initdb.d/init-users.sql
     networks:
       - trello-net
+  user-service:
+    build:
+      context: ./user-service
+    container_name: user-service
+    env_file:
+      - ./user-service/.env
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres-users
+    networks:
+      - trello-net
 volumes:
   postgres_users_data:
 
