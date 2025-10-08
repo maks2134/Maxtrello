@@ -2,9 +2,12 @@ package service
 
 import (
 	"errors"
+	"time"
 	"user-service/internal/models"
 	"user-service/internal/repository"
 	"user-service/pkg/utils"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
@@ -22,6 +25,13 @@ type UserService interface {
 type userService struct {
 	userRepo  repository.UserRepository
 	jwtSecret string
+}
+
+func NewUserService(userRepo repository.UserRepository, jwtSecret string) UserService {
+	return &userService{
+		userRepo:  userRepo,
+		jwtSecret: jwtSecret,
+	}
 }
 
 func (s *userService) Register(req *models.RegisterRequest) (*models.User, error) {
@@ -49,4 +59,15 @@ func (s *userService) Register(req *models.RegisterRequest) (*models.User, error
 	}
 
 	return user, nil
+}
+
+func (s *userService) generateJWT(user *models.User) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": user.ID,
+		"email":   user.Email,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(s.jwtSecret))
 }
