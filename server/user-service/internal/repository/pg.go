@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+
 	"user-service/internal/config"
 
 	_ "github.com/lib/pq"
@@ -18,34 +19,36 @@ func NewPostgresDB(cfg *config.Config) (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %v", err)
+		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(5)
-	db.SetConnMaxLifetime(5 * 60 * 60)
+	db.SetConnMaxLifetime(5 * time.Minute)
 
-	var dbError error
-	for i := 0; i < 5; i++ {
-		dbError = db.Ping()
-		if dbError == nil {
+	const maxAttempts = 10
+	for i := 0; i < maxAttempts; i++ {
+		err = db.Ping()
+		if err == nil {
 			break
 		}
-		log.Printf("Database connection attempt %d failed: %v", i+1, dbError)
-		if i < 4 {
+
+		log.Printf("Database connection attempt %d/%d failed: %v", i+1, maxAttempts, err)
+
+		if i < maxAttempts-1 {
 			time.Sleep(2 * time.Second)
 		}
 	}
 
-	if dbError != nil {
-		return nil, fmt.Errorf("failed to connect to database after 5 attempts: %v", dbError)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database after %d attempts: %w", maxAttempts, err)
 	}
 
 	if err := createTables(db); err != nil {
-		return nil, fmt.Errorf("failed to create tables: %v", err)
+		return nil, fmt.Errorf("failed to create tables: %w", err)
 	}
 
-	log.Println("Successfully connected !")
+	log.Println("Successfully connected to PostgreSQL and tables are ready!")
 	return db, nil
 }
 
@@ -65,9 +68,9 @@ func createTables(db *sql.DB) error {
 
 	_, err := db.Exec(query)
 	if err != nil {
-		return fmt.Errorf("failed to create tables: %v", err)
+		return fmt.Errorf("failed to create tables: %w", err)
 	}
 
-	log.Println("Database tables create")
+	log.Println("Database tables created/verified successfully")
 	return nil
 }

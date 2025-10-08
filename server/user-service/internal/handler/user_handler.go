@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+
 	"user-service/internal/models"
 	"user-service/internal/service"
 
@@ -26,7 +27,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 
 	user, err := h.userService.Register(&req)
 	if err != nil {
-		if err == service.ErrUserExists {
+		if errors.Is(err, service.ErrUserExists) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
