@@ -1,0 +1,60 @@
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+CREATE TABLE IF NOT EXISTS boards (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    owner_id UUID NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS columns (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    position INTEGER NOT NULL DEFAULT 0,
+    board_id UUID NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS board_members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    board_id UUID NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+    role VARCHAR(50) NOT NULL DEFAULT 'member',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, board_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_boards_owner_id ON boards(owner_id);
+CREATE INDEX IF NOT EXISTS idx_boards_created_at ON boards(created_at);
+
+CREATE INDEX IF NOT EXISTS idx_columns_board_id ON columns(board_id);
+CREATE INDEX IF NOT EXISTS idx_columns_position ON columns(position);
+
+CREATE INDEX IF NOT EXISTS idx_board_members_board_id ON board_members(board_id);
+CREATE INDEX IF NOT EXISTS idx_board_members_user_id ON board_members(user_id);
+
+INSERT INTO boards (id, title, description, owner_id)
+VALUES
+    ('11111111-1111-1111-1111-111111111111', 'Проект Разработка', 'Доска для управления разработкой проекта', '00000000-0000-0000-0000-000000000001'),
+    ('22222222-2222-2222-2222-222222222222', 'Личные задачи', 'Мои персональные задачи', '00000000-0000-0000-0000-000000000001')
+    ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO columns (id, title, position, board_id)
+VALUES
+    ('33333333-3333-3333-3333-333333333333', 'Бэклог', 0, '11111111-1111-1111-1111-111111111111'),
+    ('44444444-4444-4444-4444-444444444444', 'В работе', 1, '11111111-1111-1111-1111-111111111111'),
+    ('55555555-5555-5555-5555-555555555555', 'На проверке', 2, '11111111-1111-1111-1111-111111111111'),
+    ('66666666-6666-6666-6666-666666666666', 'Готово', 3, '11111111-1111-1111-1111-111111111111'),
+    ('77777777-7777-7777-7777-777777777777', 'Новые', 0, '22222222-2222-2222-2222-222222222222'),
+    ('88888888-8888-8888-8888-888888888888', 'В процессе', 1, '22222222-2222-2222-2222-222222222222'),
+    ('99999999-9999-9999-9999-999999999999', 'Выполнено', 2, '22222222-2222-2222-2222-222222222222')
+    ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO board_members (user_id, board_id, role)
+VALUES
+    ('00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'owner'),
+    ('00000000-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222', 'owner')
+    ON CONFLICT (user_id, board_id) DO NOTHING;
