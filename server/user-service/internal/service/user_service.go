@@ -27,13 +27,6 @@ type userService struct {
 	jwtSecret string
 }
 
-func NewUserService(userRepo repository.UserRepository, jwtSecret string) UserService {
-	return &userService{
-		userRepo:  userRepo,
-		jwtSecret: jwtSecret,
-	}
-}
-
 func (s *userService) Register(req *models.RegisterRequest) (*models.User, error) {
 	existingUser, err := s.userRepo.GetUserByEmail(req.Email)
 	if err != nil {
@@ -58,6 +51,41 @@ func (s *userService) Register(req *models.RegisterRequest) (*models.User, error
 		return nil, err
 	}
 
+	return user, nil
+}
+
+func (s *userService) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
+	user, err := s.userRepo.GetUserByEmail(req.Email)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, ErrInvalidCredentials
+	}
+
+	if !utils.CheckPasswordHash(req.Password, user.Password) {
+		return nil, ErrInvalidCredentials
+	}
+
+	token, err := s.generateJWT(user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.LoginResponse{
+		Token: token,
+		User:  user,
+	}, nil
+}
+
+func (s *userService) GetUser(id string) (*models.User, error) {
+	user, err := s.userRepo.GetUserByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, ErrUserNotFound
+	}
 	return user, nil
 }
 
