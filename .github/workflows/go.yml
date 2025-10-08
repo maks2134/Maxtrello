@@ -26,9 +26,12 @@ jobs:
       with:
         version: v1.58.0
         args: --timeout 5m
+      working-directory: ./server/user-service
 
     - name: Build
+      working-directory: ./server/user-service
       run: go build -v ./...
 
     - name: Test
+      working-directory: ./server/user-service
       run: go test -v ./...
