@@ -42,3 +42,17 @@ docker-compose up -d
 Документация API доступна в [API.MD](./docs/API.MD)
 
 ### Пример работы:
+Интерфейс регистрации:
+![reg](/docs/image/register.png)
+
+Интерфейс входа в аккаунт:
+![log](/docs/image/auth.png)
+
+Интерфейс с ошибкой:
+![err](/docs/image/error.png)
+
+Интерфйес при входе в аккаунт(1 Версия есть только сервис авторизации)
+![good](/docs/image/good_ver.png)
+
+Режим дебага:
+![debug](/docs/image/debug.png)
