@@ -22,7 +22,7 @@ func NewUserRepository(db *sql.DB) UserRepository {
 
 func (r *userRepository) CreateUser(user *models.User) error {
 	query := `INSERT INTO users (email, password, name) VALUES ($1, $2, $3) 
-	          RETURNING id, created_at, updated_at`
+	          RETURNING id`
 
 	return r.db.QueryRow(query, user.Email, user.Password, user.Name).Scan(
 		&user.ID,
@@ -30,7 +30,7 @@ func (r *userRepository) CreateUser(user *models.User) error {
 }
 
 func (r *userRepository) GetUserByEmail(email string) (*models.User, error) {
-	query := `SELECT id, email, password, name, created_at, updated_at 
+	query := `SELECT id, email, password, name
 	          FROM users WHERE email = $1`
 
 	user := &models.User{}
@@ -46,7 +46,7 @@ func (r *userRepository) GetUserByEmail(email string) (*models.User, error) {
 }
 
 func (r *userRepository) GetUserByID(id string) (*models.User, error) {
-	query := `SELECT id, email, password, name, created_at, updated_at 
+	query := `SELECT id, email, password, name
 	          FROM users WHERE id = $1`
 
 	user := &models.User{}
