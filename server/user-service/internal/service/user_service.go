@@ -7,7 +7,7 @@ import (
 	"user-service/internal/repository"
 	"user-service/pkg/utils"
 
-	j "github.com/golang-jwt/jwt/v5"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 var (
@@ -97,12 +97,12 @@ func (s *userService) GetUser(id string) (*models.User, error) {
 }
 
 func (s *userService) generateJWT(user *models.User) (string, error) {
-	claims := j.MapClaims{
+	claims := jwt.MapClaims{
 		"user_id": user.ID,
 		"email":   user.Email,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	}
 
-	token := j.NewWithClaims(j.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(s.jwtSecret))
 }
