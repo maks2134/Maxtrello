@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -22,8 +23,13 @@ func Load() *Config {
 		DBUser:     getEnv("DB_USER", "postgres"),
 		DBPassword: getEnv("DB_PASSWORD", "password"),
 		DBName:     getEnv("DB_NAME", "users"),
-		JWTSecret:  getEnv("JWT_SECRET", "default-jwt-secret"),
+		JWTSecret:  getEnv("JWT_SECRET", "default-jwt"),
 	}
+}
+
+func (c *Config) GetDatabaseURL() string {
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName)
 }
 
 func getEnv(key, defaultValue string) string {
