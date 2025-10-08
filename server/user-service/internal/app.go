@@ -5,6 +5,7 @@ import (
 	"log"
 	"user-service/internal/config"
 	"user-service/internal/handler"
+	"user-service/internal/middleware"
 	"user-service/internal/repository"
 	"user-service/internal/service"
 
@@ -47,6 +48,9 @@ func (a *App) Run() error {
 
 func (a *App) setupRouter(h *handler.UserHandler) {
 	a.router = gin.Default()
+
+	a.router.Use(middleware.CORS())
+	a.router.Use(gin.Logger())
 
 	api := a.router.Group("/api")
 	{

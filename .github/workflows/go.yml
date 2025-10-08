@@ -16,26 +16,31 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.25'
+          go-version: '1.21'
           cache: true
 
       - name: Install dependencies
-        working-directory: user-service
-        run: go mod download && go mod verify
+        run: |
+          cd user-service
+          go mod download
+          go mod verify
 
       - name: Run go vet
-        working-directory: user-service
-        run: go vet ./...
+        run: |
+          cd user-service
+          go vet ./...
 
       - name: Check formatting
-        working-directory: user-service
         run: |
+          cd user-service
           test -z $(gofmt -l .)
 
       - name: Run tests
-        working-directory: user-service
-        run: go test -v -race ./...
+        run: |
+          cd user-service
+          go test -v -race ./...
 
       - name: Build
-        working-directory: user-service
-        run: go build -v ./cmd/main.go
+        run: |
+          cd user-service
+          go build -v ./cmd/main.go
