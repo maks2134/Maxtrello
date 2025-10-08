@@ -1,0 +1,21 @@
+services:
+  postgres-users:
+    image: postgres:15-alpine
+    container_name: postgres-users
+    environment:
+      POSTGRES_DB: ${DB_NAME_USERS}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_users_data:/var/lib/postgresql/data
+      - ./init-scripts/init-users.sql:/docker-entrypoint-initdb.d/init-users.sql
+    networks:
+      - trello-net
+volumes:
+  postgres_users_data:
+
+networks:
+  trello-net:
+    driver: bridge
