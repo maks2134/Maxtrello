@@ -1,4 +1,7 @@
+version: '3.8'
+
 services:
+  # PostgreSQL для User Service
   postgres-users:
     image: postgres:15-alpine
     container_name: postgres-users
@@ -13,20 +16,90 @@ services:
       - ./init-scripts/init-users.sql:/docker-entrypoint-initdb.d/init-users.sql
     networks:
       - trello-net
-  user-service:
-    build:
-      context: ./user-service
-    container_name: user-service
-    env_file:
-      - ./user-service/.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB для Board Service
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: boards
     ports:
-      - "8081:8081"
-    depends_on:
-      - postgres-users
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./init-scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
       - trello-net
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/boards --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # Redis для кеширования
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - trello-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # User Service
+  user-service:
+    build:
+      context: ./server/user-service
+    container_name: user-service
+    env_file:
+      - ./server/user-service/.env
+    ports:
+      - "${USER_SERVICE_PORT}:8081"
+    depends_on:
+      postgres-users:
+        condition: service_healthy
+    networks:
+      - trello-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Board Service (MongoDB версия)
+  board-service:
+    build:
+      context: ./server/board-service
+    container_name: board-service
+    env_file:
+      - ./server/board-service/.env
+    ports:
+      - "${BOARD_SERVICE_PORT}:8082"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - trello-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   postgres_users_data:
+  mongodb_data:
 
 networks:
   trello-net:
