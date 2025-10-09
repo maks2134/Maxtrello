@@ -1,12 +1,12 @@
 package repository
 
 import (
+	"board-service/internal/models"
 	"context"
 	"errors"
 	"fmt"
 	"log"
 	"time"
-	"user-service/internal/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -37,8 +37,6 @@ func (r *columnRepository) CreateColumn(column *models.Column) error {
 	defer cancel()
 
 	column.ID = primitive.NewObjectID()
-	column.CreatedAt = time.Now()
-	column.UpdatedAt = time.Now()
 
 	_, err := r.collection.InsertOne(ctx, column)
 	return err
@@ -76,13 +74,10 @@ func (r *columnRepository) UpdateColumn(column *models.Column) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	column.UpdatedAt = time.Now()
-
 	update := bson.M{
 		"$set": bson.M{
-			"title":      column.Title,
-			"position":   column.Position,
-			"updated_at": column.UpdatedAt,
+			"title":    column.Title,
+			"position": column.Position,
 		},
 	}
 
