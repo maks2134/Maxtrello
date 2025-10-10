@@ -18,7 +18,7 @@ type boardQueryRepository struct {
 }
 
 func (b boardQueryRepository) GetBoardByID(id string) (*models.Board, error) {
-	//TODO implement me
+
 	panic("implement me")
 }
 
