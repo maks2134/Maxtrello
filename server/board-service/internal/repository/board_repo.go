@@ -1,11 +1,11 @@
 package repository
 
 import (
+	"board-service/internal/models"
 	"context"
 	"errors"
 	"fmt"
 	"time"
-	"user-service/internal/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
